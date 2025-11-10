@@ -66,6 +66,12 @@
 
 <h1>📊 AI Subproject Analysis — Luffy Framework</h1>
 
+<!-- 🧠 Top AI Summary -->
+<div class="card summary-card" id="summarySection">
+    <h2>🧠 AI Execution Summary</h2>
+    <div id="summaryContent">Loading project summary from backend...</div>
+</div>
+
 <!-- 🔍 Search MongoDB Data -->
 <div class="card search-bar">
     <h2>🔍 Search Historical AI Data</h2>
@@ -78,29 +84,25 @@
     <div id="searchResults"></div>
 </div>
 
-<!-- 🧠 AI Summary -->
-<div class="card summary-card" id="summarySection">
-    <h2>🧠 AI Execution Summary</h2>
-    <div id="summaryContent">Loading project summary from backend...</div>
-</div>
-
 <script>
-    const backendURL = "https://ai-allure-reuse-luffy.onrender.com";
+    const backendURL = "http://localhost:8081";
 
-    // Fetch AI Summary (from backend /api/summary)
+    // 🧠 Load the top summary (from /api/summary)
     async function loadSummary() {
       const summaryDiv = document.getElementById("summaryContent");
       try {
         const res = await fetch(`${backendURL}/api/summary`);
         if (!res.ok) throw new Error("Server not reachable");
-        const data = await res.text();
-        summaryDiv.innerHTML = data;
+        const data = await res.json();
+        summaryDiv.innerHTML = data.ai_summary
+          ? `<p>${data.ai_summary.replace(/\n/g, '<br>')}</p>`
+          : "<p>No summary available.</p>";
       } catch (err) {
         summaryDiv.innerHTML = `<p style='color:red;'>❌ Failed to load summary: ${err.message}</p>`;
       }
     }
 
-    // Search Data (from backend /api/search?q=)
+    // 🔍 Search endpoint (only show collections, no bottom AI summary)
     async function searchAIData() {
       const query = document.getElementById("searchInput").value.trim();
       const resultsDiv = document.getElementById("searchResults");
@@ -117,20 +119,9 @@
         if (!res.ok) throw new Error("Server not reachable");
 
         const data = await res.json();
-
         let html = "";
 
-        // ✅ Show AI Summary first
-        if (data.ai_summary) {
-          html += `
-            <div class="ai-summary-box">
-              <h3>🧠 AI Summary for "${query}"</h3>
-              <p>${data.ai_summary.replace(/\n/g, '<br>')}</p>
-            </div>
-          `;
-        }
-
-        // 🗂 Display collections neatly
+        // 🗂 Display collection results only (AI summary removed)
         if (!data.results || Object.keys(data.results).length === 0) {
           html += `<p>No results found for <b>${query}</b>.</p>`;
         } else {
@@ -148,12 +139,13 @@
         }
 
         resultsDiv.innerHTML = html;
+
       } catch (err) {
         resultsDiv.innerHTML = `<p style='color:red;'>❌ Failed to fetch data: ${err.message}</p>`;
       }
     }
 
-    // Auto-load AI summary on page load
+    // Auto-load top summary
     loadSummary();
 </script>
 

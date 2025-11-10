@@ -1,1 +1,0 @@
-{"company":"Tech Innovations Ltd.","role":"Data Analyst","appliedDate":"2023-09-15","status":"Rejected"}

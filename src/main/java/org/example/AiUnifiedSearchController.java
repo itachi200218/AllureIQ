@@ -123,7 +123,7 @@ public class AiUnifiedSearchController {
     // ✅ AI summarization via OpenRouter
     private String callOpenRouter(String text) {
         try {
-            String apiKey = openRouterApiKey; // From application.properties
+            String apiKey = openRouterApiKey;
             if (apiKey == null || apiKey.isEmpty()) {
                 return "⚠️ AI summarization skipped: Missing OPENROUTER_API_KEY";
             }
@@ -135,11 +135,22 @@ public class AiUnifiedSearchController {
             conn.setRequestProperty("Authorization", "Bearer " + apiKey);
             conn.setDoOutput(true);
 
+            // ⚙️ Medium-length summary instruction
+            String systemPrompt = """
+            You are an expert AI that summarizes MongoDB test data.
+            Write a concise yet meaningful overview covering:
+            - What the data seems to represent (AI logs, reports, etc.)
+            - Key fields and their typical values
+            - Patterns or repeated structures in JSON
+            - Any relationships between collections
+            Keep it short, structured, and clear — around 4–6 bullet points or small paragraphs.
+        """;
+
             JSONObject payload = new JSONObject();
-            payload.put("model", "gpt-3.5-turbo");
+            payload.put("model", "gpt-4o-mini");
             payload.put("messages", List.of(
-                    new JSONObject().put("role", "system").put("content", "You are an expert AI summarizer for MongoDB test logs."),
-                    new JSONObject().put("role", "user").put("content", "Summarize this MongoDB data clearly and concisely:\n" + text)
+                    new JSONObject().put("role", "system").put("content", systemPrompt),
+                    new JSONObject().put("role", "user").put("content", "Summarize this MongoDB data:\n" + text)
             ));
 
             try (OutputStream os = conn.getOutputStream()) {
@@ -163,5 +174,41 @@ public class AiUnifiedSearchController {
         } catch (Exception e) {
             return "⚠️ AI summarization failed: " + e.getMessage();
         }
+    }
+
+    // ✅ NEW: Summary Endpoint for Homepage Summary Section
+    @GetMapping("/summary")
+    public Map<String, Object> getAiSummary() {
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("timestamp", new Date().toString());
+
+        try {
+            // Fetch a few reports from ai_reports collection
+            List<Document> reports = mongo.find(new Query().limit(10), Document.class, "ai_reports");
+
+            if (reports.isEmpty()) {
+                response.put("ai_summary", "⚠️ No AI summary data found in database.");
+                return response;
+            }
+
+            // Combine summaries or content
+            StringBuilder summaryBuilder = new StringBuilder("Summarize the following AI reports and test logs:\n\n");
+            for (Document report : reports) {
+                if (report.containsKey("ai_summary")) {
+                    summaryBuilder.append(report.get("ai_summary")).append("\n\n");
+                } else {
+                    summaryBuilder.append(report.toJson()).append("\n\n");
+                }
+            }
+
+            // Call OpenRouter for summarization
+            String aiSummary = callOpenRouter(summaryBuilder.toString());
+            response.put("ai_summary", aiSummary);
+
+        } catch (Exception e) {
+            response.put("error", "❌ Failed to fetch AI summary: " + e.getMessage());
+        }
+
+        return response;
     }
 }

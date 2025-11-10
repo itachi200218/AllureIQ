@@ -1,8 +1,0 @@
-{
-    "_id": "6911d3b0cd129e327c77220b",
-    "company": "Tech Innovations Inc.",
-    "role": "Frontend Developer",
-    "status": "Rejected",
-    "appliedDate": "2023-09-15T00:00:00.000Z",
-    "__v": 0
-}

@@ -1,16 +1,8 @@
 [
     {
-        "_id": "69120f611e34b1609a0a3e88",
-        "company": "Tech Solutions Inc.",
-        "role": "Software Engineer",
-        "status": "Rejected",
-        "appliedDate": "2023-09-15T00:00:00.000Z",
-        "__v": 0
-    },
-    {
-        "_id": "6910f518bd2e729fb6830737",
-        "company": "Tech Solutions Inc.",
-        "role": "Software Engineer",
+        "_id": "69121c7ab6118775154ddff2",
+        "company": "Tech Innovations Ltd.",
+        "role": "Data Analyst",
         "status": "Rejected",
         "appliedDate": "2023-09-15T00:00:00.000Z",
         "__v": 0
@@ -24,15 +16,7 @@
         "__v": 0
     },
     {
-        "_id": "6911d3b0cd129e327c77220b",
-        "company": "Tech Innovations Inc.",
-        "role": "Frontend Developer",
-        "status": "Rejected",
-        "appliedDate": "2023-09-15T00:00:00.000Z",
-        "__v": 0
-    },
-    {
-        "_id": "6911d09acd129e327c772206",
+        "_id": "691220313ecbececf010932b",
         "company": "Tech Innovations Inc.",
         "role": "Software Engineer",
         "status": "Rejected",
@@ -89,6 +73,14 @@
     },
     {
         "_id": "6911f3425078ede2b3a493ce",
+        "company": "Tech Innovations Inc.",
+        "role": "Software Engineer",
+        "status": "Rejected",
+        "appliedDate": "2023-08-15T00:00:00.000Z",
+        "__v": 0
+    },
+    {
+        "_id": "6911d09acd129e327c772206",
         "company": "Tech Innovations Inc.",
         "role": "Software Engineer",
         "status": "Rejected",
@@ -161,6 +153,11 @@
     },
     {
         "_id": "690a9028a717cd9f7d87daa9",
+        "status": "Applied",
+        "__v": 0
+    },
+    {
+        "_id": "69121bf3b6118775154ddfed",
         "status": "Applied",
         "__v": 0
     }

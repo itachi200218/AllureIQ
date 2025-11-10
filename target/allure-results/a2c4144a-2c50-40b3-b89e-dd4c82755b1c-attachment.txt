@@ -1,8 +1,0 @@
-{
-    "_id": "69121c7ab6118775154ddff2",
-    "company": "Tech Innovations Ltd.",
-    "role": "Data Analyst",
-    "status": "Rejected",
-    "appliedDate": "2023-09-15T00:00:00.000Z",
-    "__v": 0
-}
