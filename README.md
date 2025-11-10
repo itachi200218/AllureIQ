@@ -21,7 +21,6 @@ The framework automates API testing while **learning** from execution history to
 ---
 
 ## 🧭 2️⃣ Architecture Flowchart
-
 ```mermaid
 flowchart TD
     A[TestNG Suite Run] --> B[REST Assured API Execution]
