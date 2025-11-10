@@ -4,7 +4,6 @@ import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +18,7 @@ public class AiUnifiedSearchController {
     @Autowired
     private MongoTemplate mongo;
 
-    // List of collections to search
+    // All MongoDB collections to search
     private static final List<String> COLLECTIONS = List.of(
             "LuffyFramework",
             "ai_context_logs",
@@ -35,51 +34,74 @@ public class AiUnifiedSearchController {
         }
 
         query = query.trim();
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("query", query);
-        result.put("timestamp", new Date().toString());
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("query", query);
+        response.put("timestamp", new Date().toString());
 
         Map<String, List<Document>> resultsMap = new LinkedHashMap<>();
 
-        for (String collectionName : COLLECTIONS) {
-            List<Document> docs = searchCollection(collectionName, query);
+        // ✅ NEW: If query exactly matches a collection name, return all data from that collection
+        if (COLLECTIONS.contains(query)) {
+            System.out.println("📂 Fetching all documents from: " + query);
+            List<Document> allDocs = mongo.findAll(Document.class, query);
 
-            // Convert _id to readable string
-            docs.forEach(doc -> {
-                if (doc.containsKey("_id")) {
-                    Object idObj = doc.get("_id");
-                    if (idObj instanceof ObjectId) {
-                        doc.put("_id", ((ObjectId) idObj).toHexString());
-                    } else if (idObj instanceof Document) {
-                        Document idDoc = (Document) idObj;
-                        if (idDoc.containsKey("date")) {
-                            doc.put("_id", idDoc.getDate("date").toInstant().toString());
-                        }
-                    }
+            // Convert ObjectIds to strings
+            for (Document doc : allDocs) {
+                Object id = doc.get("_id");
+                if (id instanceof ObjectId) {
+                    doc.put("_id", ((ObjectId) id).toHexString());
                 }
-            });
+                doc.put("_collection", query);
+            }
 
-            resultsMap.put(collectionName, docs);
+            resultsMap.put(query, allDocs);
+            response.put("results", resultsMap);
+            return response;
         }
 
-        result.put("results", resultsMap);
-        return result;
+        // 🔍 Normal fuzzy search for all collections
+        for (String collectionName : COLLECTIONS) {
+            long start = System.currentTimeMillis();
+            List<Document> results = searchCollection(collectionName, query);
+            long end = System.currentTimeMillis();
+
+            System.out.println("✅ " + collectionName + " → " + results.size() + " results (" + (end - start) + " ms)");
+            resultsMap.put(collectionName, results);
+        }
+
+        response.put("results", resultsMap);
+        return response;
     }
 
     private List<Document> searchCollection(String collectionName, String query) {
+        List<Document> matches = new ArrayList<>();
         try {
+            // Search text case-insensitive
             Pattern pattern = Pattern.compile(query, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
-            Criteria criteria = new Criteria().orOperator(
-                    Criteria.where("type").regex(pattern),
-                    Criteria.where("input").regex(pattern),
-                    Criteria.where("result").regex(pattern)
-            );
+            // Fetch only 200 docs for safety (avoid hangs)
+            List<Document> allDocs = mongo.find(new Query().limit(200), Document.class, collectionName);
 
-            return mongo.find(new Query(criteria), Document.class, collectionName);
+            for (Document doc : allDocs) {
+                for (Map.Entry<String, Object> entry : doc.entrySet()) {
+                    Object value = entry.getValue();
+                    if (value instanceof String && pattern.matcher((String) value).find()) {
+                        // Convert ObjectId to string
+                        Object id = doc.get("_id");
+                        if (id instanceof ObjectId) {
+                            doc.put("_id", ((ObjectId) id).toHexString());
+                        }
+
+                        doc.put("_collection", collectionName);
+                        matches.add(doc);
+                        break; // move to next doc after first match
+                    }
+                }
+            }
+
         } catch (Exception e) {
-            System.err.println("Error searching " + collectionName + ": " + e.getMessage());
-            return List.of();
+            System.err.println("❌ Error searching in " + collectionName + ": " + e.getMessage());
         }
+        return matches;
     }
 }
