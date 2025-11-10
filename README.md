@@ -22,7 +22,6 @@ The framework automates API testing while **learning** from execution history to
 
 ## 🧭 2️⃣ Architecture Flowchart
 
-
 ```mermaid
 flowchart TD
     A[TestNG Suite Run] --> B[REST Assured API Execution]
@@ -33,15 +32,15 @@ flowchart TD
     F --> G[MongoDB Storage: ai_reports, ai_executions]
     G --> H[AI Search Service (Spring Boot)]
     H --> I[Render Deployment - Cloud Access]
-    
-    subgraph AI Engine
-    C --> J[AI Pattern Analyzer]
-    J --> K[Auto Token & Payload Generator]
+
+    subgraph AI_Engine [AI Engine]
+        C --> J[AI Pattern Analyzer]
+        J --> K[Auto Token & Payload Generator]
     end
-    
-    style AI Engine fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:white
-    style A fill:#e2e8f0
-    style I fill:#38bdf8,color:white
+
+    style AI_Engine fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:white
+    style A fill:#e2e8f0,stroke:#94a3b8
+    style I fill:#38bdf8,color:white,stroke:#1e293b
 ```
 
 
