@@ -1,1 +1,0 @@
-{"company":"Tech Innovators Inc.","role":"Software Engineer","appliedDate":"2023-09-15","status":"Rejected"}

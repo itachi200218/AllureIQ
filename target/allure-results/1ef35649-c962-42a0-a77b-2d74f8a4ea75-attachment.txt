@@ -1,8 +1,0 @@
-{
-    "_id": "690b2deb408d01c78bc22a1c",
-    "company": "Acme Corporation",
-    "role": "Software Engineer",
-    "status": "Rejected",
-    "appliedDate": "2024-03-15T00:00:00.000Z",
-    "__v": 0
-}

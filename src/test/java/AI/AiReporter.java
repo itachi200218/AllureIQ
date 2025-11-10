@@ -164,6 +164,7 @@ Use readable icons and Markdown-style bullets for clarity.
 
             <div class='card summary'>
                 <h3>🧾 Overall Summary</h3>
+                <p class='comparison'>%s</p>
                 <p>%s</p>
             </div>
 
@@ -201,7 +202,8 @@ Use readable icons and Markdown-style bullets for clarity.
         </html>
     """.formatted(
                 LocalDateTime.now(),      // 1 → Generated timestamp
-                summaryBox,               // 2 → AI Overall Summary// 3 → New Comparison Summary (detailed)
+                summaryBox,
+                comparisonSummary,  // 2 → AI Overall Summary// 3 → New Comparison Summary (detailed)
                 toBulletList(issuesBox),  // 4 → Issues
                 toBulletList(rootCauseBox), // 5 → Root Causes
                 toBulletList(suggestionsBox), // 6 → Suggestions

@@ -15,11 +15,14 @@ public class corsConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedOrigins(
-                                "https://ai-allure-reuseluffy.vercel.app", // your Vercel frontend URL
-                                "http://localhost:8081" // optional local dev
+                                "https://framwork-one.vercel.app",   // ✅ Frontend (Vercel)
+                                "http://localhost:3000",            // ✅ Local React dev
+                                "http://127.0.0.1:5500",            // ✅ Local HTML test
+                                "http://192.168.1.4:62633"          // ✅ Your local IP dev port
                         )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowedHeaders("*");
+                        .allowedHeaders("*")
+                        .allowCredentials(false);
             }
         };
     }

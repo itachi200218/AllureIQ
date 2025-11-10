@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Execution Summary | Luffy Framework</title>
+    <style>
+        body {
+          font-family: 'Segoe UI', sans-serif;
+          background: #f9fbfd;
+          padding: 20px;
+          color: #222;
+        }
+        h1 {
+          color: #0078D7;
+          text-align: center;
+        }
+        .card {
+          background: #fff;
+          border-radius: 12px;
+          padding: 20px;
+          margin-bottom: 20px;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+        .search-bar {
+          border-left: 6px solid #6C63FF;
+        }
+        .summary-card {
+          border-left: 6px solid #4285F4;
+        }
+        input, button {
+          font-size: 14px;
+          padding: 8px;
+        }
+        pre {
+          background: #f8f9fa;
+          padding: 10px;
+          border-radius: 6px;
+          border: 1px solid #ddd;
+          overflow-x: auto;
+        }
+        #searchResults {
+          margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>📊 AI Subproject Analysis — Luffy Framework</h1>
+
+<!-- 🔍 Search MongoDB Data -->
+<div class="card search-bar">
+    <h2>🔍 Search Historical AI Data</h2>
+    <input id="searchInput" type="text" placeholder="Search (e.g. login, error, endpoint)"
+           style="width:60%;border-radius:8px;border:1px solid #ccc;">
+    <button onclick="searchAIData()"
+            style="background-color:#0078D7;color:white;border:none;border-radius:8px;margin-left:10px;">
+        Search
+    </button>
+    <div id="searchResults"></div>
+</div>
+
+<!-- 🧠 AI Summary -->
+<div class="card summary-card" id="summarySection">
+    <h2>🧠 AI Execution Summary</h2>
+    <div id="summaryContent">Loading project summary from backend...</div>
+</div>
+
+<script>
+    const backendURL = "https://ai-allure-reuse-luffy.onrender.com";
+
+    // Fetch AI Summary (from backend /api/summary)
+    async function loadSummary() {
+      const summaryDiv = document.getElementById("summaryContent");
+      try {
+        const res = await fetch(`${backendURL}/api/summary`);
+        if (!res.ok) throw new Error("Server not reachable");
+
+        // Get text response (backend returns HTML or text)
+        const data = await res.text();
+
+        // Display summary
+        summaryDiv.innerHTML = data;
+      } catch (err) {
+        summaryDiv.innerHTML = `<p style='color:red;'>❌ Failed to load summary: ${err.message}</p>`;
+      }
+    }
+
+    // Search Data (from backend /api/search?q=)
+    async function searchAIData() {
+      const query = document.getElementById("searchInput").value.trim();
+      const resultsDiv = document.getElementById("searchResults");
+
+      if (!query) {
+        resultsDiv.innerHTML = "<p style='color:red;'>Please enter a search keyword.</p>";
+        return;
+      }
+
+      resultsDiv.innerHTML = "<p>⏳ Searching...</p>";
+
+      try {
+        const res = await fetch(`${backendURL}/api/search?q=${encodeURIComponent(query)}`);
+        if (!res.ok) throw new Error("Server not reachable");
+
+        const data = await res.json();
+
+        if (!data.results || Object.keys(data.results).length === 0) {
+          resultsDiv.innerHTML = `<p>No results found for <b>${query}</b>.</p>`;
+          return;
+        }
+
+        let html = "";
+        for (const [collection, docs] of Object.entries(data.results)) {
+          html += `<h3 style='color:#0078D7;'>📂 ${collection}</h3>`;
+          if (docs.length === 0) {
+            html += "<p><i>No entries found.</i></p>";
+          } else {
+            docs.forEach(doc => {
+              html += `<pre>${JSON.stringify(doc, null, 2)}</pre>`;
+            });
+          }
+        }
+
+        resultsDiv.innerHTML = html;
+      } catch (err) {
+        resultsDiv.innerHTML = `<p style='color:red;'>❌ Failed to fetch data: ${err.message}</p>`;
+      }
+    }
+
+    // Auto-load AI summary on page load
+    loadSummary();
+</script>
+
+</body>
+</html>

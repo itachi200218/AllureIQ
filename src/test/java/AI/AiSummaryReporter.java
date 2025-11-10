@@ -10,6 +10,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * 🧠 AI Summary Reporter (Unified Allure + Global Summary)
+ * --------------------------------------------------------
+ * - Generates ONE unified HTML report for Allure
+ * - Merges project comparison + global weighted summary + live Mongo search
+ * - Includes per-project paragraph summaries for the last two executions
+ */
 public class AiSummaryReporter {
 
     private static final String projectName = System.getProperty("project.name",
@@ -19,6 +26,7 @@ public class AiSummaryReporter {
         StringBuilder finalSummary = new StringBuilder();
 
         try {
+            // ✅ Step 1: Run comparator
             ReportComparator.compareLatestExecutions();
 
             var db = MongoConnector.connect();
@@ -28,15 +36,16 @@ public class AiSummaryReporter {
                     .into(new ArrayList<>());
 
             if (projectDocs.isEmpty()) {
-                finalSummary.append("⚠️ No execution data found for project: ").append(projectName);
+                finalSummary.append("<div style='color:#D32F2F;font-weight:600;'>⚠️ No execution data found for project: ")
+                        .append(projectName).append("</div>");
             } else {
-                finalSummary.append("<h3>🧠 AI Execution Summary for Project: ").append(projectName).append("</h3>");
-                finalSummary.append("<hr>");
+                finalSummary.append("<h2 style='color:#1565C0;'>🧠 Execution Summary — ").append(projectName).append("</h2>");
+                finalSummary.append("<hr style='border:1px solid #ccc;'>");
 
                 Map<String, List<Document>> groupedBySubproject = projectDocs.stream()
                         .collect(Collectors.groupingBy(d -> d.getString("subproject")));
 
-                double totalRate = 0.0;
+                double totalWeightedSuccess = 0.0;
                 long totalEndpoints = 0;
                 int countedProjects = 0;
 
@@ -44,21 +53,24 @@ public class AiSummaryReporter {
                     List<Document> runs = groupedBySubproject.get(subproject);
                     runs.sort(Comparator.comparing(d -> d.getString("timestamp"), Comparator.reverseOrder()));
 
-                    finalSummary.append("<h4>📦 Subproject: ").append(subproject).append("</h4>");
+                    finalSummary.append(String.format("""
+                        <div class='subproject-card'>
+                            <h3>📦 %s</h3>
+                    """, subproject));
 
                     Document subDoc = runs.get(0);
                     List<Document> allSessions = (List<Document>) subDoc.getOrDefault("sessions", List.of());
 
                     if (allSessions.size() < 2) {
-                        finalSummary.append("⚠️ Only one session found — comparison unavailable.<br><br>");
+                        finalSummary.append("<p style='color:#E65100;'>⚠️ Only one session found — comparison unavailable.</p></div>");
                         continue;
                     }
 
                     allSessions.sort(Comparator.comparing(s -> s.getString("createdAt"), Comparator.reverseOrder()));
-
                     List<Document> latestSessions = List.of(allSessions.get(0));
                     List<Document> previousSessions = List.of(allSessions.get(1));
 
+                    // ✅ Compare 2 sessions
                     String subReport = compareSessions(
                             subproject,
                             allSessions.get(1).getString("createdAt"),
@@ -66,55 +78,99 @@ public class AiSummaryReporter {
                             previousSessions,
                             latestSessions
                     );
-                    finalSummary.append(subReport).append("<br>");
+                    finalSummary.append(subReport).append("</div>");
 
+                    // ✅ Weighted computation
                     long latestTotal = countEndpoints(latestSessions);
                     long latestSuccess = countSuccessEndpoints(latestSessions);
                     double latestRate = latestTotal == 0 ? 0 : (latestSuccess * 100.0 / latestTotal);
 
-                    totalRate += latestRate;
+                    totalWeightedSuccess += (latestRate * latestTotal / 100.0);
                     totalEndpoints += latestTotal;
                     countedProjects++;
                 }
 
-                if (countedProjects > 0) {
-                    double avgRate = totalRate / countedProjects;
-                    finalSummary.append("<hr>");
-                    finalSummary.append(String.format("""
-                            <h3>🌍 Global Project Comparison Summary</h3>
-                            <p><b>🏁 %s — Avg Success Rate:</b> %.2f%% | <b>Endpoints:</b> %d</p>
-                            """, projectName, avgRate, totalEndpoints));
-                }
+                // ✅ Global Summary
+                double avgRate = totalEndpoints > 0 ? (totalWeightedSuccess / totalEndpoints) * 100.0 : 0.0;
 
-                finalSummary.append("<hr>");
-                finalSummary.append("<p style='font-size:13px;color:#666;'>✨ Auto-generated by AI + Allure | Smart Project Comparison</p>");
+                String globalSummary = String.format("""
+                    <div class='global-summary'>
+                        <h2>🌍 Global Execution Overview</h2>
+                        <p><b>📊 Overall Success Rate:</b> <span style='color:#0B8043;font-weight:700;'>%.2f%%</span><br>
+                        <b>🧩 Total Subprojects:</b> %d<br>
+                        <b>🧾 Total Endpoints Processed:</b> %d<br>
+                        <b>🔎 Data Source:</b> MongoDB Collection <code>ai_executions</code></p>
+                    </div>
+                    """, avgRate, countedProjects, totalEndpoints);
+
+                finalSummary.insert(0, globalSummary);
+                finalSummary.append(String.format("""
+                    <div class='summary-footer'>
+                        <p><b>🧾 Summary:</b> Across <b>%d</b> subprojects, <b>%d</b> endpoints were analyzed,
+                        achieving an overall success rate of <b>%.2f%%</b>. Each subproject’s latest two runs
+                        were compared to measure stability, progress, and recurring issues.</p>
+                    </div>
+                """, countedProjects, totalEndpoints, avgRate));
             }
 
         } catch (Exception e) {
-            finalSummary.append("❌ Error during report generation: ").append(e.getMessage());
+            finalSummary.append("<div style='color:red;font-weight:bold;'>❌ Error generating report: ")
+                    .append(e.getMessage()).append("</div>");
             e.printStackTrace();
         }
 
-        // ✅ Add the Search Bar + Script inside the report
+        // ✅ Step 2: Stylish HTML
         String htmlReport = """
             <html>
             <head>
                 <meta charset='UTF-8'>
                 <style>
-                    body { font-family:'Segoe UI',sans-serif;background:#f9fbfd;padding:20px; }
-                    h2 { color:#0078D7; }
-                    .card { background:#fff; border-radius:12px; padding:20px; margin-bottom:20px;
-                            box-shadow:0 4px 10px rgba(0,0,0,0.08); }
+                    body { font-family:'Segoe UI',sans-serif;background:#f5f8fa;padding:25px;line-height:1.6; }
+                    h2,h3 { color:#0D47A1;margin-bottom:8px; }
+                    .subproject-card {
+                        background:#ffffff;
+                        border-left:6px solid #4285F4;
+                        border-radius:10px;
+                        padding:15px 20px;
+                        margin-bottom:20px;
+                        box-shadow:0 4px 10px rgba(0,0,0,0.08);
+                        transition: transform 0.2s ease;
+                    }
+                    .subproject-card:hover { transform: translateY(-2px); }
+                    .global-summary {
+                        background:#E3F2FD;
+                        padding:18px;
+                        border-left:6px solid #1A73E8;
+                        border-radius:10px;
+                        margin-bottom:25px;
+                    }
+                    .summary-footer {
+                        background:#E8EAF6;
+                        padding:15px;
+                        border-left:6px solid #3F51B5;
+                        border-radius:10px;
+                        margin-top:30px;
+                        font-size:14px;
+                    }
+                    .ai-search {
+                        background:#fff;
+                        border-left:6px solid #6C63FF;
+                        border-radius:10px;
+                        padding:15px;
+                        margin-bottom:25px;
+                        box-shadow:0 4px 10px rgba(0,0,0,0.08);
+                    }
+                    p { margin:6px 0; }
+                    code { background:#f0f3f6;padding:2px 5px;border-radius:4px; }
                     input,button { font-size:14px; }
                 </style>
             </head>
             <body>
                 <h2>📊 AI Subproject Analysis — %s</h2>
 
-                <!-- 🔍 Search MongoDB Data -->
-                <div class='card' style='border-left:6px solid #6C63FF;'>
+                <div class='ai-search'>
                     <h3>🔍 Search Historical AI Data</h3>
-                    <input id='searchInput' type='text' placeholder='Search (e.g. login, error, endpoint)'
+                    <input id='searchInput' type='text' placeholder='Search keyword (e.g., login, error, endpoint)'
                         style='padding:8px;width:60%%;border-radius:8px;border:1px solid #ccc;'>
                     <button onclick='searchAIData()'
                         style='padding:8px 15px;background-color:#0078D7;color:white;border:none;border-radius:8px;margin-left:10px;'>
@@ -123,8 +179,7 @@ public class AiSummaryReporter {
                     <div id='searchResults' style='margin-top:20px;'></div>
                 </div>
 
-                <!-- 🧠 AI Summary -->
-                <div class='card' style='border-left:6px solid #4285F4;'>%s</div>
+                %s
 
                 <script>
                 async function searchAIData() {
@@ -136,7 +191,7 @@ public class AiSummaryReporter {
                     }
                     resultsDiv.innerHTML = "<p>⏳ Searching...</p>";
                     try {
-                    const res = await fetch(`https://ai-reports-backend.onrender.com/api/search?q=${encodeURIComponent(query)}`);
+                        const res = await fetch(`https://ai-allure-reuse-luffy.onrender.com/api/search?q=${encodeURIComponent(query)}`);
                         if (!res.ok) throw new Error("Server not reachable");
                         const data = await res.json();
 
@@ -166,13 +221,14 @@ public class AiSummaryReporter {
             </html>
             """.formatted(projectName, finalSummary.toString());
 
-        Allure.addAttachment("AI Subproject Comparison (" + projectName + ")", "text/html",
+        // ✅ Step 3: Attach to Allure
+        Allure.addAttachment("AI Unified Report (" + projectName + ")", "text/html",
                 new ByteArrayInputStream(htmlReport.getBytes(StandardCharsets.UTF_8)), "html");
 
-        System.out.println(htmlReport);
+        System.out.println("✅ AI Unified HTML Summary generated for project: " + projectName);
     }
 
-    // ✅ Helper methods remain unchanged
+    // === Helper Methods (unchanged logic) ===
     private static String compareSessions(String subproject, String prevTime, String latestTime,
                                           List<Document> prevSessions, List<Document> latestSessions) {
         long prevTotal = countEndpoints(prevSessions);
@@ -187,7 +243,6 @@ public class AiSummaryReporter {
 
         Set<String> prevEndpoints = extractEndpoints(prevSessions);
         Set<String> latestEndpoints = extractEndpoints(latestSessions);
-
         Set<String> added = new HashSet<>(latestEndpoints);
         added.removeAll(prevEndpoints);
         Set<String> removed = new HashSet<>(prevEndpoints);
@@ -199,29 +254,28 @@ public class AiSummaryReporter {
 
         StringBuilder html = new StringBuilder();
         html.append(String.format("""
-                <b>🧩 Subproject:</b> %s<br>
-                <b>📅 Previous Run:</b> %s — %d endpoints<br>
-                <b>📅 Latest Run:</b> %s — %d endpoints<br>
-                <b>📊 Comparison:</b><br>
-                • Previous Success Rate: %.2f%% (%d/%d)<br>
-                • Latest Success Rate: %.2f%% (%d/%d)<br>
-                • Change: %+.2f%%<br>
-                • Failures: %d → %d<br><br>
-                """, subproject, prevTime, prevTotal, latestTime, latestTotal,
-                prevRate, prevSuccess, prevTotal, latestRate, latestSuccess, latestTotal, diff, prevFail, latestFail));
+                <p><b>📅 Previous Run:</b> %s — %d endpoints<br>
+                <b>📅 Latest Run:</b> %s — %d endpoints</p>
+                <p><b>📊 Performance:</b><br>
+                • Previous Success Rate: <b>%.2f%%</b><br>
+                • Latest Success Rate: <b>%.2f%%</b><br>
+                • Δ Change: <b style='color:%s;'>%+.2f%%</b><br>
+                • Failures: %d → %d</p>
+                """, prevTime, prevTotal, latestTime, latestTotal,
+                prevRate, latestRate, diff >= 0 ? "#1B5E20" : "#C62828", diff, prevFail, latestFail));
 
         if (!added.isEmpty()) added.forEach(ep -> html.append("➕ ").append(ep).append("<br>"));
         if (!removed.isEmpty()) removed.forEach(ep -> html.append("➖ ").append(ep).append("<br>"));
         if (!newFails.isEmpty()) newFails.forEach(ep -> html.append("❌ ").append(ep).append("<br>"));
-        if (added.isEmpty() && removed.isEmpty() && newFails.isEmpty()) html.append("✅ Stable endpoints.<br>");
+        if (added.isEmpty() && removed.isEmpty() && newFails.isEmpty())
+            html.append("✅ Stable endpoints.<br>");
 
+        html.append(generateParagraphSummary(subproject, prevRate, latestRate, diff, prevFail, latestFail, prevTime, latestTime)).append("<br>");
         return html.toString();
     }
 
     private static long countEndpoints(List<Document> sessions) {
-        return sessions.stream()
-                .mapToLong(s -> ((List<?>) s.getOrDefault("endpoints", List.of())).size())
-                .sum();
+        return sessions.stream().mapToLong(s -> ((List<?>) s.getOrDefault("endpoints", List.of())).size()).sum();
     }
 
     private static long countSuccessEndpoints(List<Document> sessions) {
@@ -247,5 +301,20 @@ public class AiSummaryReporter {
                 .filter(d -> d.getInteger("status", 0) >= 400)
                 .map(d -> d.getString("method") + " " + d.getString("endpoint"))
                 .collect(Collectors.toSet());
+    }
+
+    private static String generateParagraphSummary(String subproject, double prevRate, double latestRate, double delta,
+                                                   long prevFails, long latestFails, String prevTime, String latestTime) {
+        String trend = delta > 0 ? "improvement" : (delta < 0 ? "decline" : "no major change");
+        String performance = delta > 0 ? "performed better" : (delta < 0 ? "performed slightly worse" : "maintained stability");
+        String color = delta > 0 ? "#0B8043" : (delta < 0 ? "#C41E3A" : "#424242");
+
+        return String.format("""
+            <p style='color:%s;font-weight:600;font-size:13px;'>
+            🧾 <b>Summary:</b> Between <b>%s</b> and <b>%s</b>, subproject <b>%s</b> showed a %s —
+            from <b>%.2f%%</b> (%d fails) to <b>%.2f%%</b> (%d fails).
+            It %s overall (Δ %+.2f%%).
+            </p>
+            """, color, prevTime, latestTime, subproject, trend, prevRate, prevFails, latestRate, latestFails, performance, delta);
     }
 }
