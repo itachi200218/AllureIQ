@@ -1,0 +1,74 @@
+    <html>
+    <head>
+    <meta charset='UTF-8'>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background:#f5f7fa; padding:25px; }
+        h2 { color:#0078D7; margin-bottom:5px; }
+        h3 { color:#333; }
+        .timestamp { color:#666; font-size:14px; margin-bottom:12px; }
+        .card {
+            background:#fff; border-radius:12px; padding:20px; margin-bottom:20px;
+            box-shadow:0 4px 10px rgba(0,0,0,0.08);
+        }
+        .summary { border-left:6px solid #0078D7; }
+        .issues { border-left:6px solid #DC3545; }
+        .rootcause { border-left:6px solid #FFC107; }
+        .suggestions { border-left:6px solid #28A745; }
+        .endpoints { border-left:6px solid #6C63FF; }
+        .errors { border-left:6px solid #FF5733; }
+        ul { padding-left:20px; }
+        li { margin:6px 0; line-height:1.6; }
+        .endpoint-list li::before { content: "🌐 "; }
+        .issue-list li::before { content: "⚠️ "; }
+        .suggestion-list li::before { content: "💡 "; }
+        .rootcause-list li::before { content: "🧠 "; }
+        .error-list li::before { content: "❌ "; }
+        details { margin-bottom:15px; }
+        summary { cursor:pointer; font-weight:600; }
+        .comparison { color:#222; font-size:15px; margin-bottom:12px; line-height:1.5; }
+    </style>
+    </head>
+    <body>
+        <h2>🤖 AI Test Intelligence Report — Unified View</h2>
+        <div class='timestamp'>🕒 Generated: 2025-11-11T02:33:38.576169700</div>
+
+        <div class='card summary'>
+            <h3>🧾 Overall Summary</h3>
+            <p class='comparison'>A total of 7 unique APIs were tested, achieving an overall success rate of 88.57% based on 21 requests. The APIs included authentication, CRUD operations, and integration endpoints. The majority of tests produced successful results, with some failures warranting further investigation.</p>
+            <p>📊 No API executions found in MongoDB (ai_executions).</p>
+        </div>
+
+        <div class='card issues'>
+            <h3>⚠️ Key Issues</h3>
+            <ul class='issue-list'><li>- 500 Internal Server Error (POST /api/chat): The server encountered an error while processing the request.</li><li>- 404 Not Found (DELETE /api/messages/6912531835f125adeea4310c): The specified message ID was not found.</li></ul>
+        </div>
+
+        <div class='card rootcause'>
+            <h3>🧠 Technical Root Cause Insights</h3>
+            <ul class='rootcause-list'><li>- POST /api/chat (500): Likely caused by an unhandled exception in the server during request processing.</li><li>- DELETE /api/messages/6912531835f125adeea4310c (404): Caused by submitting a request with a non-existent message ID.</li></ul>
+        </div>
+
+        <div class='card suggestions'>
+            <h3>💡 Suggestions</h3>
+            <ul class='suggestion-list'><li>- Implement thorough input validation for request payloads to avoid server exceptions.</li><li>- Enhance logging in API methods to capture and troubleshoot failures effectively.</li><li>- Introduce retry logic for transient errors, especially for critical operations like message processing.</li></ul>
+        </div>
+
+        <div class='card endpoints'>
+            <h3>🌐 Endpoints Tested</h3>
+            <ul class='endpoint-list'><li>- POST /api/auth/register → 201: User registration successful.</li><li>- POST /api/auth/login → 200: User login successful.</li><li>- GET /api/posts → 200: Successfully retrieved posts.</li><li>- POST /api/posts → 201: Post created successfully.</li><li>- DELETE /api/posts/6912531435f125adeea43104 → 200: Post deleted successfully.</li><li>- GET /api/auth/profile → 200: User profile retrieved successfully.</li><li>- POST /api/chat → 500: Internal server error during chat message processing.</li><li>- POST /api/messages → 200: Message sent successfully.</li><li>- GET /api/messages/68114dbd23bc5b4e45b5a085 → 200: Successfully retrieved a specific message.</li><li>- DELETE /api/messages/clear → 200: All messages cleared successfully.</li><li>- DELETE /api/messages/6912531835f125adeea4310c → 404: Message ID not found for deletion.</li></ul>
+        </div>
+
+        <div class='card errors'>
+            <h3>❌ Error Breakdown</h3>
+            <details open>
+                <summary>Click to view error logs</summary>
+                <pre>- POST /api/chat (500):  
+  - Cause: Internal server error during request processing.</pre>
+            </details>
+        </div>
+
+        <hr style='margin-top:30px;'>
+        <p style='color:#555;'>✅ AI summary generated and stored successfully.</p>
+    </body>
+    </html>
+

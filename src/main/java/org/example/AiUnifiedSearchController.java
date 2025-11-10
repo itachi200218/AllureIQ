@@ -23,11 +23,9 @@ public class AiUnifiedSearchController {
     @Autowired
     private MongoTemplate mongo;
 
-    // ✅ Inject OpenRouter API Key from application.properties
     @Value("${openrouter.api.key:}")
     private String openRouterApiKey;
 
-    // ✅ MongoDB Collections
     private static final List<String> COLLECTIONS = List.of(
             "LuffyFramework",
             "ai_context_logs",
@@ -50,11 +48,14 @@ public class AiUnifiedSearchController {
         Map<String, List<Document>> resultsMap = new LinkedHashMap<>();
         StringBuilder summaryBuilder = new StringBuilder();
 
-        // ✅ Case: Direct collection name
+        // ✅ Direct collection name case
         if (COLLECTIONS.contains(query)) {
             List<Document> allDocs = mongo.findAll(Document.class, query);
             String finalQuery = query;
-            allDocs.forEach(doc -> convertId(doc, finalQuery));
+            allDocs.forEach(doc -> {
+                convertId(doc, finalQuery);
+                sanitizePaths(doc);
+            });
             resultsMap.put(query, allDocs);
             response.put("results", resultsMap);
 
@@ -94,22 +95,34 @@ public class AiUnifiedSearchController {
         List<Document> matches = new ArrayList<>();
         try {
             Pattern pattern = Pattern.compile(query, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-            List<Document> allDocs = mongo.find(new Query().limit(200), Document.class, collectionName);
+            List<Document> allDocs = mongo.find(new Query().limit(60), Document.class, collectionName); // ✅ Only first 60
 
             for (Document doc : allDocs) {
-                for (Map.Entry<String, Object> entry : doc.entrySet()) {
-                    Object value = entry.getValue();
-                    if (value instanceof String && pattern.matcher((String) value).find()) {
-                        convertId(doc, collectionName);
-                        matches.add(doc);
-                        break;
-                    }
+                if (containsMatch(doc, pattern)) {
+                    convertId(doc, collectionName);
+                    sanitizePaths(doc); // ✅ Neutralize redirect-like fields
+                    matches.add(doc);
                 }
             }
         } catch (Exception e) {
             System.err.println("❌ Error searching in " + collectionName + ": " + e.getMessage());
         }
         return matches;
+    }
+    private boolean containsMatch(Object value, Pattern pattern) {
+        if (value == null) return false;
+
+        if (value instanceof String) {
+            return pattern.matcher((String) value).find();
+        } else if (value instanceof Document doc) {
+            for (Object v : doc.values()) if (containsMatch(v, pattern)) return true;
+        } else if (value instanceof Map<?, ?> map) {
+            for (Object v : map.values()) if (containsMatch(v, pattern)) return true;
+        } else if (value instanceof List<?> list) {
+            for (Object item : list) if (containsMatch(item, pattern)) return true;
+        }
+
+        return false;
     }
 
     private void convertId(Document doc, String collectionName) {
@@ -120,11 +133,25 @@ public class AiUnifiedSearchController {
         doc.put("_collection", collectionName);
     }
 
-    // ✅ AI summarization via OpenRouter
+//    private void sanitizePaths(Document doc) {
+//        for (Map.Entry<String, Object> entry : doc.entrySet()) {
+//            Object value = entry.getValue();
+//
+//            if (value instanceof String str && str.startsWith("/")) {
+//                doc.put(entry.getKey(), "PATH:" + str);
+//            } else if (value instanceof Document nested) {
+//                sanitizePaths(nested);
+//            } else if (value instanceof List<?> list) {
+//                for (Object item : list) {
+//                    if (item instanceof Document d) sanitizePaths(d);
+//                }
+//            }
+//        }
+//    }
+
     private String callOpenRouter(String text) {
         try {
-            String apiKey = openRouterApiKey;
-            if (apiKey == null || apiKey.isEmpty()) {
+            if (openRouterApiKey == null || openRouterApiKey.isEmpty()) {
                 return "⚠️ AI summarization skipped: Missing OPENROUTER_API_KEY";
             }
 
@@ -132,25 +159,24 @@ public class AiUnifiedSearchController {
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
-            conn.setRequestProperty("Authorization", "Bearer " + apiKey);
+            conn.setRequestProperty("Authorization", "Bearer " + openRouterApiKey);
             conn.setDoOutput(true);
 
-            // ⚙️ Medium-length summary instruction
             String systemPrompt = """
-            You are an expert AI that summarizes MongoDB test data.
-            Write a concise yet meaningful overview covering:
-            - What the data seems to represent (AI logs, reports, etc.)
-            - Key fields and their typical values
-            - Patterns or repeated structures in JSON
-            - Any relationships between collections
-            Keep it short, structured, and clear — around 4–6 bullet points or small paragraphs.
-        """;
+            You are an expert AI that summarizes MongoDB testing and automation data.
+            Provide a professional, structured summary highlighting:
+            - Data purpose and structure
+            - Key fields and values
+            - Any notable patterns or relationships between collections
+            - Insights relevant for QA or AI analysis
+            Keep it clean and formatted with 4–6 short bullet points.
+            """;
 
             JSONObject payload = new JSONObject();
             payload.put("model", "gpt-4o-mini");
             payload.put("messages", List.of(
                     new JSONObject().put("role", "system").put("content", systemPrompt),
-                    new JSONObject().put("role", "user").put("content", "Summarize this MongoDB data:\n" + text)
+                    new JSONObject().put("role", "user").put("content", "Analyze this MongoDB dataset:\n" + text)
             ));
 
             try (OutputStream os = conn.getOutputStream()) {
@@ -160,30 +186,46 @@ public class AiUnifiedSearchController {
             BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             StringBuilder result = new StringBuilder();
             String line;
-            while ((line = reader.readLine()) != null) {
-                result.append(line);
-            }
+            while ((line = reader.readLine()) != null) result.append(line);
 
             JSONObject json = new JSONObject(result.toString());
-            return json
-                    .getJSONArray("choices")
-                    .getJSONObject(0)
-                    .getJSONObject("message")
-                    .getString("content");
+            return json.getJSONArray("choices").getJSONObject(0)
+                    .getJSONObject("message").getString("content");
 
         } catch (Exception e) {
             return "⚠️ AI summarization failed: " + e.getMessage();
         }
     }
+    // ✅ Place this anywhere in the class (outside other methods)
+    private void sanitizePaths(Document doc) {
+        for (String key : doc.keySet()) {
+            Object value = doc.get(key);
+            if (value instanceof String) {
+                String strValue = (String) value;
+                // 🧱 Detect and neutralize redirect-like or localhost URLs
+                if (strValue.matches("(?i).*localhost.*|.*http://.*|.*https://.*|.*login.*|.*redirect.*")) {
+                    doc.put(key, "[redacted or internal link]");
+                }
+            } else if (value instanceof Document) {
+                sanitizePaths((Document) value); // recursive sanitize
+            } else if (value instanceof List<?>) {
+                List<?> list = (List<?>) value;
+                for (Object item : list) {
+                    if (item instanceof Document) {
+                        sanitizePaths((Document) item);
+                    }
+                }
+            }
+        }
+    }
 
-    // ✅ NEW: Summary Endpoint for Homepage Summary Section
+
     @GetMapping("/summary")
     public Map<String, Object> getAiSummary() {
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("timestamp", new Date().toString());
 
         try {
-            // Fetch a few reports from ai_reports collection
             List<Document> reports = mongo.find(new Query().limit(10), Document.class, "ai_reports");
 
             if (reports.isEmpty()) {
@@ -191,20 +233,14 @@ public class AiUnifiedSearchController {
                 return response;
             }
 
-            // Combine summaries or content
             StringBuilder summaryBuilder = new StringBuilder("Summarize the following AI reports and test logs:\n\n");
             for (Document report : reports) {
-                if (report.containsKey("ai_summary")) {
+                if (report.containsKey("ai_summary"))
                     summaryBuilder.append(report.get("ai_summary")).append("\n\n");
-                } else {
-                    summaryBuilder.append(report.toJson()).append("\n\n");
-                }
+                else summaryBuilder.append(report.toJson()).append("\n\n");
             }
 
-            // Call OpenRouter for summarization
-            String aiSummary = callOpenRouter(summaryBuilder.toString());
-            response.put("ai_summary", aiSummary);
-
+            response.put("ai_summary", callOpenRouter(summaryBuilder.toString()));
         } catch (Exception e) {
             response.put("error", "❌ Failed to fetch AI summary: " + e.getMessage());
         }

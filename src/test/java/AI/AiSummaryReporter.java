@@ -181,42 +181,82 @@ public class AiSummaryReporter {
 
                 %s
 
-                <script>
-                async function searchAIData() {
-                    const query = document.getElementById("searchInput").value.trim();
-                    const resultsDiv = document.getElementById("searchResults");
-                    if (!query) {
-                        resultsDiv.innerHTML = "<p style='color:red;'>Please enter a search keyword.</p>";
-                        return;
-                    }
-                    resultsDiv.innerHTML = "<p>⏳ Searching...</p>";
-                    try {
-                        const res = await fetch(`https://ai-allure-reuse-luffy.onrender.com/api/search?q=${encodeURIComponent(query)}`);
-                        if (!res.ok) throw new Error("Server not reachable");
-                        const data = await res.json();
-
-                        if (!data.results || Object.keys(data.results).length === 0) {
-                            resultsDiv.innerHTML = "<p>No results found for <b>" + query + "</b>.</p>";
-                            return;
-                        }
-
-                        let html = "";
-                        for (const [collection, docs] of Object.entries(data.results)) {
-                            html += `<h4 style='color:#0078D7;'>📂 ${collection}</h4>`;
-                            if (docs.length === 0) {
-                                html += "<p><i>No entries found.</i></p>";
-                            } else {
-                                docs.forEach(doc => {
-                                    html += `<pre style='background:#f8f9fa;padding:10px;border-radius:6px;border:1px solid #ddd;'>${JSON.stringify(doc,null,2)}</pre>`;
-                                });
+             <script>
+                 async function searchAIData() {
+                     const query = document.getElementById("searchInput").value.trim();
+                     const resultsDiv = document.getElementById("searchResults");
+                     if (!query) {
+                         resultsDiv.innerHTML = "<p style='color:red;'>Please enter a search keyword.</p>";
+                         return;
+                     }
+                     resultsDiv.innerHTML = "<p>⏳ Searching...</p>";
+                
+                     // ✅ Automatically detect environment
+                     const isLocal = window.location.hostname.includes("localhost") || window.location.hostname.startsWith("192.");
+                     const baseUrl = isLocal
+                         ? "http://localhost:8081"  // local Spring Boot
+                         : "https://ai-allure-reuse-luffy.onrender.com"; // deployed Render backend
+                
+                     try {
+                         const res = await fetch(`${baseUrl}/api/search?q=${encodeURIComponent(query)}`);
+                         if (!res.ok) throw new Error("Server not reachable");
+                         const data = await res.json();
+                
+                         if (!data.results || Object.keys(data.results).length === 0) {
+                             resultsDiv.innerHTML = "<p>No results found for <b>" + query + "</b>.</p>";
+                             return;
+                         }
+                
+                         let html = "";
+                
+                         // ✅ Show AI summary FIRST (top of search results)
+                        // ✅ Enhanced AI summary (bullet-point style)
+                            if (data.ai_summary) {
+                                html += `
+                                    <div style="
+                                        background:linear-gradient(135deg,#ede7f6,#f3e5f5);
+                                        border-left:6px solid #7B1FA2;
+                                        padding:15px 20px;
+                                        border-radius:12px;
+                                        box-shadow:0 3px 10px rgba(123,31,162,0.15);
+                                        margin-bottom:20px;
+                                        font-family:'Segoe UI',sans-serif;
+                                    ">
+                                        <h3 style="color:#4A148C;margin-bottom:10px;">🧠 AI Summary Insights</h3>
+                                        <ul style="list-style:none;padding-left:0;margin:0;">
+                                            ${data.ai_summary.split('\\n').map(line => {
+                                                if (line.trim().startsWith('-')) {
+                                                    return `<li style="margin-bottom:6px;">🔹 ${line.replace('-', '').trim()}</li>`;
+                                                } else if (line.trim().startsWith('*')) {
+                                                    return `<li style="margin-bottom:6px;">✨ ${line.replace('*', '').trim()}</li>`;
+                                                } else {
+                                                    return `<li style="margin-bottom:6px;">💡 ${line.trim()}</li>`;
+                                                }
+                                            }).join('')}
+                                        </ul>
+                                    </div>`;
                             }
-                        }
-                        resultsDiv.innerHTML = html;
-                    } catch (err) {
-                        resultsDiv.innerHTML = `<p style='color:red;'>❌ Failed to fetch data: ${err.message}</p>`;
-                    }
-                }
-                </script>
+                
+                         // ✅ Then show all MongoDB collection results
+                         for (const [collection, docs] of Object.entries(data.results)) {
+                             html += `<h4 style='color:#0078D7;'>📂 ${collection}</h4>`;
+                             if (docs.length === 0) {
+                                 html += "<p><i>No entries found.</i></p>";
+                             } else {
+                                 docs.forEach(doc => {
+                                     html += `<pre style='background:#f8f9fa;padding:10px;border-radius:6px;border:1px solid #ddd;'>${JSON.stringify(doc,null,2)}</pre>`;
+                                 });
+                             }
+                         }
+                
+                         resultsDiv.innerHTML = html;
+                     } catch (err) {
+                         resultsDiv.innerHTML = `<p style='color:red;'>❌ Failed to fetch data: ${err.message}</p>`;
+                     }
+                 }
+                 </script>
+                
+                
             </body>
             </html>
             """.formatted(projectName, finalSummary.toString());

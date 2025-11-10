@@ -164,7 +164,6 @@ Use readable icons and Markdown-style bullets for clarity.
 
             <div class='card summary'>
                 <h3>🧾 Overall Summary</h3>
-                <p class='comparison'>%s</p>
                 <p>%s</p>
             </div>
 
@@ -207,8 +206,7 @@ Use readable icons and Markdown-style bullets for clarity.
                 toBulletList(issuesBox),  // 4 → Issues
                 toBulletList(rootCauseBox), // 5 → Root Causes
                 toBulletList(suggestionsBox), // 6 → Suggestions
-                toBulletList(endpointsBox), // 7 → Endpoints
-                errorsBox                  // 8 → Errors
+                toBulletList(endpointsBox)  // 7 → Endpoints
         );
 
         // Save locally

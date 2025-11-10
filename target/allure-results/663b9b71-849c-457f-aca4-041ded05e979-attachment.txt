@@ -1,0 +1,1 @@
+{"company":"Tech Innovations Inc.","role":"Software Engineer","appliedDate":"2023-09-15","status":"Rejected"}

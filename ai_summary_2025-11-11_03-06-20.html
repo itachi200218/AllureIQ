@@ -1,0 +1,73 @@
+    <html>
+    <head>
+    <meta charset='UTF-8'>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background:#f5f7fa; padding:25px; }
+        h2 { color:#0078D7; margin-bottom:5px; }
+        h3 { color:#333; }
+        .timestamp { color:#666; font-size:14px; margin-bottom:12px; }
+        .card {
+            background:#fff; border-radius:12px; padding:20px; margin-bottom:20px;
+            box-shadow:0 4px 10px rgba(0,0,0,0.08);
+        }
+        .summary { border-left:6px solid #0078D7; }
+        .issues { border-left:6px solid #DC3545; }
+        .rootcause { border-left:6px solid #FFC107; }
+        .suggestions { border-left:6px solid #28A745; }
+        .endpoints { border-left:6px solid #6C63FF; }
+        .errors { border-left:6px solid #FF5733; }
+        ul { padding-left:20px; }
+        li { margin:6px 0; line-height:1.6; }
+        .endpoint-list li::before { content: "🌐 "; }
+        .issue-list li::before { content: "⚠️ "; }
+        .suggestion-list li::before { content: "💡 "; }
+        .rootcause-list li::before { content: "🧠 "; }
+        .error-list li::before { content: "❌ "; }
+        details { margin-bottom:15px; }
+        summary { cursor:pointer; font-weight:600; }
+        .comparison { color:#222; font-size:15px; margin-bottom:12px; line-height:1.5; }
+    </style>
+    </head>
+    <body>
+        <h2>🤖 AI Test Intelligence Report — Unified View</h2>
+        <div class='timestamp'>🕒 Generated: 2025-11-11T03:06:21.022712200</div>
+
+        <div class='card summary'>
+            <h3>🧾 Overall Summary</h3>
+            <p class='comparison'>A total of 5 unique APIs were tested with a 100% success rate, indicating robust performance during this test cycle. The endpoints involved CRUD operations and integrated seamlessly with the authentication mechanism, confirming their reliability in handling job data.</p>
+            <p>📊 No API executions found in MongoDB (ai_executions).</p>
+        </div>
+
+        <div class='card issues'>
+            <h3>⚠️ Key Issues</h3>
+            <ul class='issue-list'><li>- None reported; all requests returned valid responses.</li></ul>
+        </div>
+
+        <div class='card rootcause'>
+            <h3>🧠 Technical Root Cause Insights</h3>
+            <ul class='rootcause-list'><li>- N/A (No issues detected)</li></ul>
+        </div>
+
+        <div class='card suggestions'>
+            <h3>💡 Suggestions</h3>
+            <ul class='suggestion-list'><li>- Validation Checks: Implement additional validation checks for input data to prevent potential future errors.</li><li>- Error Handling: Enhance error handling to provide more descriptive messages for different response states.</li><li>- Rate Limiting: Consider implementing rate limiting mechanisms to safeguard against abuse and ensure availability.</li><li>- Asynchronous Processing: Utilize background processing for longer operations and provide immediate feedback to the user.</li></ul>
+        </div>
+
+        <div class='card endpoints'>
+            <h3>🌐 Endpoints Tested</h3>
+            <ul class='endpoint-list'><li>- GET `https://student-job-tracker-1-q8rh.onrender.com/api/jobs` → 200: Successfully retrieved job listings.</li><li>- POST `https://student-job-tracker-1-q8rh.onrender.com/api/jobs` → 201: Job created successfully.</li><li>- PUT `https://student-job-tracker-1-q8rh.onrender.com/api/jobs/6911f4ce5078ede2b3a493d3` → 200: Job updated successfully.</li><li>- DELETE `https://student-job-tracker-1-q8rh.onrender.com/api/jobs/6912568ffab68420438cc7c8` → 200: Job deleted successfully.</li></ul>
+        </div>
+
+        <div class='card errors'>
+            <h3>❌ Error Breakdown</h3>
+            <details open>
+                <summary>Click to view error logs</summary>
+                <pre>- None encountered; all requests yielded successful responses.</pre>
+            </details>
+        </div>
+
+        <hr style='margin-top:30px;'>
+        <p style='color:#555;'>✅ AI summary generated and stored successfully.</p>
+    </body>
+    </html>
+

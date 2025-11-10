@@ -156,7 +156,8 @@ public class TrackerTest {
     @Test(priority = 5, description = "Generate AI summary report for all tests")
     @Story("AI Summary + Insights")
     @Severity(SeverityLevel.MINOR)
-    public void testAiSummaryReport() {
+    public void
+    testAiSummaryReport() {
         Allure.step("🧠 Generating AI test summary and saving to file...");
         String aiSummary = AiReporter.generateAndSaveSummary();
 

@@ -1,0 +1,74 @@
+    <html>
+    <head>
+    <meta charset='UTF-8'>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background:#f5f7fa; padding:25px; }
+        h2 { color:#0078D7; margin-bottom:5px; }
+        h3 { color:#333; }
+        .timestamp { color:#666; font-size:14px; margin-bottom:12px; }
+        .card {
+            background:#fff; border-radius:12px; padding:20px; margin-bottom:20px;
+            box-shadow:0 4px 10px rgba(0,0,0,0.08);
+        }
+        .summary { border-left:6px solid #0078D7; }
+        .issues { border-left:6px solid #DC3545; }
+        .rootcause { border-left:6px solid #FFC107; }
+        .suggestions { border-left:6px solid #28A745; }
+        .endpoints { border-left:6px solid #6C63FF; }
+        .errors { border-left:6px solid #FF5733; }
+        ul { padding-left:20px; }
+        li { margin:6px 0; line-height:1.6; }
+        .endpoint-list li::before { content: "🌐 "; }
+        .issue-list li::before { content: "⚠️ "; }
+        .suggestion-list li::before { content: "💡 "; }
+        .rootcause-list li::before { content: "🧠 "; }
+        .error-list li::before { content: "❌ "; }
+        details { margin-bottom:15px; }
+        summary { cursor:pointer; font-weight:600; }
+        .comparison { color:#222; font-size:15px; margin-bottom:12px; line-height:1.5; }
+    </style>
+    </head>
+    <body>
+        <h2>🤖 AI Test Intelligence Report — Unified View</h2>
+        <div class='timestamp'>🕒 Generated: 2025-11-11T02:32:23.917060100</div>
+
+        <div class='card summary'>
+            <h3>🧾 Overall Summary</h3>
+            <p class='comparison'>A total of 10 unique APIs were tested across various endpoints, achieving a success rate of 80%. Performance was generally stable with the majority of requests returning 200 status codes. Both authentication and CRUD endpoints were included in the tests, providing a comprehensive assessment of core functionalities.</p>
+            <p>📊 No API executions found in MongoDB (ai_executions).</p>
+        </div>
+
+        <div class='card issues'>
+            <h3>⚠️ Key Issues</h3>
+            <ul class='issue-list'><li>- 404 Not Found:</li><li>- Endpoint: `POST /api/user/login` - The endpoint does not exist.</li><li>- Endpoint: `GET /get-recipe-detail?id=1` - Invalid recipe ID requested.</li></ul>
+        </div>
+
+        <div class='card rootcause'>
+            <h3>🧠 Technical Root Cause Insights</h3>
+            <ul class='rootcause-list'><li>- 404 Not Found for `POST /api/user/login`: Endpoint URL may be incorrect or due to lack of proper deployment.</li><li>- 404 Not Found for `GET /get-recipe-detail?id=1`: The requested recipe ID does not exist in the database.</li><li>- 500 Internal Server Error for `POST /chatbot-api`: Likely caused by an unhandled exception in the backend processing.</li><li>- 500 Internal Server Error for `POST /ai-search`: Potentially due to improper handling of input data or backend logic failure.</li></ul>
+        </div>
+
+        <div class='card suggestions'>
+            <h3>💡 Suggestions</h3>
+            <ul class='suggestion-list'><li>- Improve URL Verification: Implementing endpoint verification during deployment to ensure all routes are correctly set up.</li><li>- Enhance Error Handling: Use try-catch blocks and better logging to capture backend exceptions for debugging the 500 errors.</li><li>- Validation Checks: Validate input data before processing to mitigate errors from invalid IDs or unexpected payloads.</li><li>- Implement Retry Logic: Consider implementing retry mechanisms for transient errors, especially for network calls to improve reliability.</li></ul>
+        </div>
+
+        <div class='card endpoints'>
+            <h3>🌐 Endpoints Tested</h3>
+            <ul class='endpoint-list'><li>- POST /ai-search → 500 (Internal Server Error)</li><li>- POST /chatbot-api → 500 (Internal Server Error)</li><li>- GET /get-recipes?category=Non-Veg → 200 (Returned recipes for Non-Veg category)</li><li>- GET /get-recipes?category=Veg → 200 (Returned recipes for Veg category)</li><li>- GET /recipe/Chicken%20Biryani → 200 (Detailed recipe for Chicken Biryani)</li><li>- GET /get-recipe-detail?id=2 → 200 (Returned details for recipe ID 2)</li><li>- GET /get-recipe-detail?id=1 → 404 (Invalid recipe ID)</li><li>- GET /get-suggestions?query=chi → 200 (Suggestions based on query 'chi')</li><li>- GET /get-suggestions?query=fish → 200 (Suggestions based on query 'fish')</li><li>- GET /get-suggestions?query=veg recipe → 200 (Suggestions based on query 'veg recipe')</li><li>- GET /get-suggestions?query=veg → 200 (Suggestions based on query 'veg')</li></ul>
+        </div>
+
+        <div class='card errors'>
+            <h3>❌ Error Breakdown</h3>
+            <details open>
+                <summary>Click to view error logs</summary>
+                <pre>- POST /api/user/login → 404 
+  - Cause: Endpoint does not exist.</pre>
+            </details>
+        </div>
+
+        <hr style='margin-top:30px;'>
+        <p style='color:#555;'>✅ AI summary generated and stored successfully.</p>
+    </body>
+    </html>
+

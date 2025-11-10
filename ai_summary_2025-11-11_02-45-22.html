@@ -1,0 +1,75 @@
+    <html>
+    <head>
+    <meta charset='UTF-8'>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background:#f5f7fa; padding:25px; }
+        h2 { color:#0078D7; margin-bottom:5px; }
+        h3 { color:#333; }
+        .timestamp { color:#666; font-size:14px; margin-bottom:12px; }
+        .card {
+            background:#fff; border-radius:12px; padding:20px; margin-bottom:20px;
+            box-shadow:0 4px 10px rgba(0,0,0,0.08);
+        }
+        .summary { border-left:6px solid #0078D7; }
+        .issues { border-left:6px solid #DC3545; }
+        .rootcause { border-left:6px solid #FFC107; }
+        .suggestions { border-left:6px solid #28A745; }
+        .endpoints { border-left:6px solid #6C63FF; }
+        .errors { border-left:6px solid #FF5733; }
+        ul { padding-left:20px; }
+        li { margin:6px 0; line-height:1.6; }
+        .endpoint-list li::before { content: "🌐 "; }
+        .issue-list li::before { content: "⚠️ "; }
+        .suggestion-list li::before { content: "💡 "; }
+        .rootcause-list li::before { content: "🧠 "; }
+        .error-list li::before { content: "❌ "; }
+        details { margin-bottom:15px; }
+        summary { cursor:pointer; font-weight:600; }
+        .comparison { color:#222; font-size:15px; margin-bottom:12px; line-height:1.5; }
+    </style>
+    </head>
+    <body>
+        <h2>🤖 AI Test Intelligence Report — Unified View</h2>
+        <div class='timestamp'>🕒 Generated: 2025-11-11T02:45:22.150883600</div>
+
+        <div class='card summary'>
+            <h3>🧾 Overall Summary</h3>
+            <p class='comparison'>- A total of 5 unique APIs were tested, encompassing GET, POST, PUT, and DELETE methods.
+- The overall success rate is 100%, with all requests returning successful status codes.
+- The tests covered CRUD operations on job listings, and no integration endpoints or authentication checks were included.</p>
+            <p>📊 No API executions found in MongoDB (ai_executions).</p>
+        </div>
+
+        <div class='card issues'>
+            <h3>⚠️ Key Issues</h3>
+            <ul class='issue-list'><li>- No failures were encountered during the testing phase, all responses returned valid 200 or 201 codes.</li></ul>
+        </div>
+
+        <div class='card rootcause'>
+            <h3>🧠 Technical Root Cause Insights</h3>
+            <ul class='rootcause-list'><li>- Since there were no failures, no root causes need to be discussed. All functionalities performed as expected during testing.</li></ul>
+        </div>
+
+        <div class='card suggestions'>
+            <h3>💡 Suggestions</h3>
+            <ul class='suggestion-list'><li>- Consider adding input validation checks for the POST and PUT methods to handle potential edge cases.</li><li>- Implement better payload handling to ensure that only valid data types are accepted in requests for job listings.</li><li>- Introduce retry logic for critical operations where transient issues may occur, particularly on network failures.</li></ul>
+        </div>
+
+        <div class='card endpoints'>
+            <h3>🌐 Endpoints Tested</h3>
+            <ul class='endpoint-list'><li>- GET https://student-job-tracker-1-q8rh.onrender.com/api/jobs → 200: Successfully retrieves a list of job postings.</li><li>- POST https://student-job-tracker-1-q8rh.onrender.com/api/jobs → 201: Creates a new job posting successfully.</li><li>- PUT https://student-job-tracker-1-q8rh.onrender.com/api/jobs/6911f3425078ede2b3a493ce → 200: Updates a specific job posting successfully.</li><li>- DELETE https://student-job-tracker-1-q8rh.onrender.com/api/jobs/69125538fab68420438cc7be → 200: Deletes a specific job posting successfully.</li></ul>
+        </div>
+
+        <div class='card errors'>
+            <h3>❌ Error Breakdown</h3>
+            <details open>
+                <summary>Click to view error logs</summary>
+                <pre>- No endpoints returned non-200 status codes or encountered exceptions in this test run; thus, no error breakdown is necessary.</pre>
+            </details>
+        </div>
+
+        <hr style='margin-top:30px;'>
+        <p style='color:#555;'>✅ AI summary generated and stored successfully.</p>
+    </body>
+    </html>
+

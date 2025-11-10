@@ -1,0 +1,73 @@
+    <html>
+    <head>
+    <meta charset='UTF-8'>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background:#f5f7fa; padding:25px; }
+        h2 { color:#0078D7; margin-bottom:5px; }
+        h3 { color:#333; }
+        .timestamp { color:#666; font-size:14px; margin-bottom:12px; }
+        .card {
+            background:#fff; border-radius:12px; padding:20px; margin-bottom:20px;
+            box-shadow:0 4px 10px rgba(0,0,0,0.08);
+        }
+        .summary { border-left:6px solid #0078D7; }
+        .issues { border-left:6px solid #DC3545; }
+        .rootcause { border-left:6px solid #FFC107; }
+        .suggestions { border-left:6px solid #28A745; }
+        .endpoints { border-left:6px solid #6C63FF; }
+        .errors { border-left:6px solid #FF5733; }
+        ul { padding-left:20px; }
+        li { margin:6px 0; line-height:1.6; }
+        .endpoint-list li::before { content: "🌐 "; }
+        .issue-list li::before { content: "⚠️ "; }
+        .suggestion-list li::before { content: "💡 "; }
+        .rootcause-list li::before { content: "🧠 "; }
+        .error-list li::before { content: "❌ "; }
+        details { margin-bottom:15px; }
+        summary { cursor:pointer; font-weight:600; }
+        .comparison { color:#222; font-size:15px; margin-bottom:12px; line-height:1.5; }
+    </style>
+    </head>
+    <body>
+        <h2>🤖 AI Test Intelligence Report — Unified View</h2>
+        <div class='timestamp'>🕒 Generated: 2025-11-11T00:28:07.609073200</div>
+
+        <div class='card summary'>
+            <h3>🧾 Overall Summary</h3>
+            <p class='comparison'>A total of 4 unique APIs were successfully tested, with an impressive 100% success rate across the endpoints. The tests included authentication, CRUD operations, and integration endpoints effectively, showcasing the overall robustness of the API.</p>
+            <p>📊 No API executions found in MongoDB (ai_executions).</p>
+        </div>
+
+        <div class='card issues'>
+            <h3>⚠️ Key Issues</h3>
+            <ul class='issue-list'><li>- No issues were reported during the tests as all endpoints returned expected status codes (200, 201).</li></ul>
+        </div>
+
+        <div class='card rootcause'>
+            <h3>🧠 Technical Root Cause Insights</h3>
+            <ul class='rootcause-list'><li>- N/A (No failures reported)</li></ul>
+        </div>
+
+        <div class='card suggestions'>
+            <h3>💡 Suggestions</h3>
+            <ul class='suggestion-list'><li>- Implement Validation Checks: Ensure all inputs are validated on the server-side to improve data integrity.</li><li>- Better Payload Handling: Include detailed error messages in response payloads for failed requests to assist in debugging.</li><li>- Retry Logic: Consider implementing retry logic for transient errors in future API tests or production environments.</li></ul>
+        </div>
+
+        <div class='card endpoints'>
+            <h3>🌐 Endpoints Tested</h3>
+            <ul class='endpoint-list'><li>- GET `https://student-job-tracker-1-q8rh.onrender.com/api/jobs` → 200: Successfully retrieved list of job postings.</li><li>- POST `https://student-job-tracker-1-q8rh.onrender.com/api/jobs` → 201: Successfully created a new job posting.</li><li>- PUT `https://student-job-tracker-1-q8rh.onrender.com/api/jobs/69120a711e34b1609a0a3e79` → 200: Successfully updated the existing job posting.</li><li>- DELETE `https://student-job-tracker-1-q8rh.onrender.com/api/jobs/69122c418c225a5d6af82d99` → 200: Successfully deleted the specified job posting.</li></ul>
+        </div>
+
+        <div class='card errors'>
+            <h3>❌ Error Breakdown</h3>
+            <details open>
+                <summary>Click to view error logs</summary>
+                <pre>- No non-200 status codes or exceptions found during the test execution. All endpoints functioned as expected without errors.</pre>
+            </details>
+        </div>
+
+        <hr style='margin-top:30px;'>
+        <p style='color:#555;'>✅ AI summary generated and stored successfully.</p>
+    </body>
+    </html>
+

@@ -1,0 +1,8 @@
+{
+    "_id": "691204461e34b1609a0a3e65",
+    "company": "Tech Innovations Inc.",
+    "role": "Software Engineer",
+    "status": "Rejected",
+    "appliedDate": "2023-08-15T00:00:00.000Z",
+    "__v": 0
+}
